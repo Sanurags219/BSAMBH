@@ -3,71 +3,83 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bsambh - Base Ecosystem Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Bsambh - Base Mainnet Hub</title>
+  
+  <!-- Farcaster Frame v2 Meta Tags -->
+  <meta property="fc:frame" content='{"version":"next","imageUrl":"https://bsambh.app/splash.png","button":{"title":"Launch Bsambh","action":{"type":"launch_app","name":"Bsambh","url":"https://bsambh.app","splashImageUrl":"https://bsambh.app/splash.png","splashBackgroundColor":"#000000"}}}' />
+  <meta property="og:title" content="Bsambh" />
+  <meta property="og:description" content="Production-grade portal for Base Mainnet." />
+  <meta property="og:image" content="https://bsambh.app/splash.png" />
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --base-blue: #0052ff;
+      --farcaster-purple: #8a63d2;
+    }
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
       background-color: #000000;
       color: #ffffff;
+      margin: 0;
       overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior-y: none;
     }
     .base-gradient {
-      background: linear-gradient(135deg, #0052ff 0%, #002d8d 100%);
+      background: linear-gradient(135deg, var(--base-blue) 0%, #002d8d 100%);
     }
     .glass-card {
       background: rgba(255, 255, 255, 0.03);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .nav-active {
-      color: #0052ff;
-      border-top: 2px solid #0052ff;
+    #splash-screen {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;
     }
-    input::-webkit-outer-spin-button,
-    input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
+    .loader-ring {
+      width: 90px;
+      height: 90px;
+      border: 3px solid rgba(0, 82, 255, 0.05);
+      border-top: 3px solid var(--base-blue);
+      border-radius: 50%;
+      animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
-    @keyframes pulse-slow {
-      0%, 100% { opacity: 0.3; }
-      50% { opacity: 0.6; }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
-    .animate-pulse-slow {
-      animation: pulse-slow 3s infinite;
-    }
-    /* Smooth Transitions for Tab Switching */
-    .tab-content-enter {
+    .fade-out {
       opacity: 0;
-      transform: translateY(10px);
+      visibility: hidden;
     }
-    .tab-content-enter-active {
-      opacity: 1;
-      transform: translateY(0);
-      transition: opacity 300ms, transform 300ms;
+    ::-webkit-scrollbar {
+      width: 0px;
     }
   </style>
   <script>
-    // Critical shims for libraries expecting a Node-like environment
     window.global = window;
     window.process = { 
       env: { 
-        API_KEY: "", // Will be injected by the environment
+        API_KEY: "", 
         NODE_ENV: "production" 
       },
       nextTick: (fn) => setTimeout(fn, 0),
       version: 'v18.0.0',
       versions: {},
       platform: 'browser'
-    };
-    
-    // Global error catching for debugging purposes
-    window.onerror = function(message, source, lineno, colno, error) {
-      console.error("Global Error Caught:", message, "at", source, ":", lineno);
     };
   </script>
   <script type="importmap">
@@ -87,6 +99,17 @@
 </script>
 </head>
 <body>
+  <div id="splash-screen">
+    <div class="relative">
+      <div class="loader-ring"></div>
+      <div class="absolute inset-0 flex items-center justify-center font-black text-blue-500 text-3xl italic tracking-tighter">B</div>
+    </div>
+    <div class="mt-8 text-center">
+      <h1 class="font-black italic text-2xl uppercase tracking-tighter">Bsambh</h1>
+      <p class="text-[9px] text-zinc-600 font-black uppercase tracking-[0.3em] mt-2 animate-pulse">Base Mainnet Protocol</p>
+    </div>
+  </div>
+
   <div id="root"></div>
   <script type="module" src="index.tsx"></script>
 </body>
