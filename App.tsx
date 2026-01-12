@@ -17,7 +17,7 @@ import {
   FarcasterNotificationDetails,
   formatMarketAlert
 } from './services/notificationService';
-import { sdk } from '@farcaster/miniapp-sdk';
+import { sdk } from '@farcaster/frame-sdk';
 import { 
   ArrowLeftRight, 
   TrendingUp, 
