@@ -1,7 +1,11 @@
 
 import React, { useState } from 'react';
 import { AppIconName } from '../types';
-import { Waves, ArrowRight, Loader2, Info, CheckCircle2, AlertCircle, ExternalLink, CircleHelp, Zap } from 'lucide-react';
+import { sdk } from '@farcaster/frame-sdk';
+import { 
+  Waves, ArrowRight, Loader2, Info, CheckCircle2, AlertCircle, 
+  ExternalLink, CircleHelp, Zap, Share2 
+} from 'lucide-react';
 
 interface BridgeProps {
   notify?: (title: string, message: string, type: 'success' | 'info' | 'error', iconName?: AppIconName) => void;
@@ -45,6 +49,18 @@ const Bridge: React.FC<BridgeProps> = ({ notify }) => {
     }, 8000); 
   };
 
+  const handleShareToFarcaster = () => {
+    const text = encodeURIComponent(`Just bridged ${amount} ETH to @base via @bsambh! The future is on-chain. 🚀`);
+    const url = encodeURIComponent(window.location.origin);
+    const warpcastUrl = `https://warpcast.com/~/compose?text=${text}&embeds[]=${url}`;
+    
+    if (sdk && sdk.actions && sdk.actions.openUrl) {
+      sdk.actions.openUrl(warpcastUrl);
+    } else {
+      window.open(warpcastUrl, '_blank');
+    }
+  };
+
   if (status === 'success') {
     return (
       <div className="max-w-lg mx-auto py-12 text-center space-y-8 animate-in zoom-in-95">
@@ -70,12 +86,22 @@ const Bridge: React.FC<BridgeProps> = ({ notify }) => {
             <span className="text-blue-400">Base Mainnet</span>
           </div>
         </div>
-        <button 
-          onClick={() => { setStatus('idle'); setAmount(''); }}
-          className="w-full py-5 bg-white text-black font-black uppercase tracking-widest rounded-3xl hover:bg-blue-600 hover:text-white transition-all shadow-xl active:scale-95"
-        >
-          Bridge More
-        </button>
+        
+        <div className="flex flex-col gap-3">
+          <button 
+            onClick={handleShareToFarcaster}
+            className="w-full py-5 bg-[#8a63d2] text-white font-black uppercase tracking-widest rounded-3xl hover:bg-purple-600 transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2"
+          >
+            <Share2 size={18} /> Share to Farcaster
+          </button>
+          
+          <button 
+            onClick={() => { setStatus('idle'); setAmount(''); }}
+            className="w-full py-5 bg-white text-black font-black uppercase tracking-widest rounded-3xl hover:bg-blue-600 hover:text-white transition-all shadow-xl active:scale-95"
+          >
+            Bridge More
+          </button>
+        </div>
       </div>
     );
   }
