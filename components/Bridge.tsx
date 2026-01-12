@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
-import { Waves, ArrowRight, Loader2, Info, CheckCircle2, AlertCircle, ExternalLink, HelpCircle, Zap } from 'lucide-react';
+import { AppIconName } from '../types';
+import { Waves, ArrowRight, Loader2, Info, CheckCircle2, AlertCircle, ExternalLink, CircleHelp, Zap } from 'lucide-react';
 
 interface BridgeProps {
-  notify?: (title: string, message: string, type: 'success' | 'info' | 'error', icon?: React.ReactNode) => void;
+  notify?: (title: string, message: string, type: 'success' | 'info' | 'error', iconName?: AppIconName) => void;
 }
 
 const Tooltip: React.FC<{ content: string; children: React.ReactNode }> = ({ content, children }) => {
@@ -32,17 +33,16 @@ const Bridge: React.FC<BridgeProps> = ({ notify }) => {
     setIsBridging(true);
     setStatus('initiating');
     
-    if (notify) notify("Bridge Initiated", `Sending ${amount} ETH to Base Mainnet. Stay tuned.`, "info", <Waves size={20} />);
+    if (notify) notify("Bridge Initiated", `Sending ${amount} ETH to Base Mainnet. Stay tuned.`, "info", 'waves');
     
     await new Promise(resolve => setTimeout(resolve, 2000));
     
     setIsBridging(false);
     
-    // Simulate background process completion
     setTimeout(() => {
       setStatus('success');
-      if (notify) notify("Funds Arrived", `Your ${amount} ETH has been successfully settled on Base.`, "success", <Zap size={20} />);
-    }, 8000); // 8 second simulation for "Background" push notification
+      if (notify) notify("Funds Arrived", `Your ${amount} ETH has been successfully settled on Base.`, "success", 'waves');
+    }, 8000); 
   };
 
   if (status === 'success') {
@@ -157,7 +157,7 @@ const Bridge: React.FC<BridgeProps> = ({ notify }) => {
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Est. Time</span>
                   <Tooltip content="Calculated based on current Ethereum L1 and Base confirmation speeds.">
-                    <HelpCircle size={12} className="text-zinc-600 cursor-help hover:text-blue-500 transition-colors" />
+                    <CircleHelp size={12} className="text-zinc-600 cursor-help hover:text-blue-500 transition-colors" />
                   </Tooltip>
                 </div>
                 <span className="text-xs font-bold">~3 minutes</span>
@@ -166,7 +166,7 @@ const Bridge: React.FC<BridgeProps> = ({ notify }) => {
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">L1 Fee</span>
                   <Tooltip content="The gas cost required to finalize your transaction on Ethereum L1.">
-                    <HelpCircle size={12} className="text-zinc-600 cursor-help hover:text-orange-400 transition-colors" />
+                    <CircleHelp size={12} className="text-zinc-600 cursor-help hover:text-orange-400 transition-colors" />
                   </Tooltip>
                 </div>
                 <span className="text-xs font-bold text-orange-400">~0.002 ETH</span>

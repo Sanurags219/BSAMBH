@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { AppIconName } from '../types';
 import { Wand2, Download, AlertCircle, Loader2, Key, Trash2, History, LayoutGrid, Sparkles, Cpu, Palette } from 'lucide-react';
 import { generateImage } from '../services/geminiService';
 import { ImageSize } from '../types';
@@ -22,7 +23,11 @@ const LOADING_MESSAGES = [
   "Finalizing color balance..."
 ];
 
-const AIImageGen: React.FC = () => {
+interface AIImageGenProps {
+  notify?: (title: string, message: string, type: 'success' | 'info' | 'error', iconName?: AppIconName) => void;
+}
+
+const AIImageGen: React.FC<AIImageGenProps> = ({ notify }) => {
   const [prompt, setPrompt] = useState('');
   const [size, setSize] = useState<ImageSize>('1K');
   const [generatedUrl, setGeneratedUrl] = useState('');
@@ -78,7 +83,6 @@ const AIImageGen: React.FC = () => {
         const hasKey = await window.aistudio.hasSelectedApiKey();
         setHasApiKey(hasKey);
       } else {
-        // Fallback: assume the key is available if we're not in the AI Studio context
         setHasApiKey(true);
       }
     } catch (e) {
@@ -116,6 +120,7 @@ const AIImageGen: React.FC = () => {
           size,
           timestamp: Date.now()
         });
+        if (notify) notify("Image Ready", "Your AI masterpiece is complete.", "success", "image");
       }
     } catch (error: any) {
       if (error.message?.includes("Requested entity was not found")) {
@@ -123,6 +128,7 @@ const AIImageGen: React.FC = () => {
         handleOpenSelectKey();
       }
       console.error(error);
+      if (notify) notify("Generation Failed", "Could not create image at this time.", "error", "alert");
     } finally {
       setIsLoading(false);
     }

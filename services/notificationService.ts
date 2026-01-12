@@ -39,7 +39,6 @@ export const sendSystemNotification = (title: string, body: string, icon?: strin
 
 /**
  * Sends a notification via the Farcaster/Base Mini App protocol.
- * In a real app, the server would handle this. Here we simulate the POST request.
  */
 export const sendFarcasterNotification = async (
   details: FarcasterNotificationDetails,
@@ -55,7 +54,7 @@ export const sendFarcasterNotification = async (
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        notificationId: crypto.randomUUID(),
+        notificationId: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now(),
         title: title.slice(0, 32),
         body: body.slice(0, 128),
         targetUrl: appUrl,
@@ -71,9 +70,16 @@ export const sendFarcasterNotification = async (
 };
 
 /**
- * Simulates the Farcaster/Base Mini App SDK notification opt-in.
- * Returns mock notification details as defined in Base documentation.
+ * Simulates market change notification logic.
  */
+export const formatMarketAlert = (asset: string, change: number, price: number) => {
+  const direction = change > 0 ? "🚀 Mooning" : "📉 Dipping";
+  return {
+    title: `${asset} ${direction}`,
+    body: `${asset} just moved ${change > 0 ? '+' : ''}${change.toFixed(1)}% to $${price.toLocaleString()}. Check your positions on Base.`
+  };
+};
+
 export const simulateFarcasterNotificationOptIn = async () => {
   await new Promise(resolve => setTimeout(resolve, 800));
   

@@ -1,5 +1,4 @@
 
-// Add React import to fix 'Cannot find namespace React' error
 import React from 'react';
 
 export enum AppTab {
@@ -29,10 +28,13 @@ export type ImageSize = '1K' | '2K' | '4K';
 
 export type NotificationType = 'success' | 'info' | 'error';
 
+export type AppIconName = 'zap' | 'rocket' | 'waves' | 'trending-up' | 'trending-down' | 'image' | 'check' | 'alert' | 'info';
+
 export interface AppNotification {
   id: string;
   title: string;
   message: string;
   type: NotificationType;
+  iconName?: AppIconName;
   icon?: React.ReactNode;
 }

@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { AppTab, AppNotification } from './types';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { AppTab, AppNotification, AppIconName } from './types';
 import Swap from './components/Swap';
 import Earn from './components/Earn';
 import NFTLauncher from './components/NFTLauncher';
@@ -14,7 +14,8 @@ import {
   sendSystemNotification, 
   simulateFarcasterNotificationOptIn,
   sendFarcasterNotification,
-  FarcasterNotificationDetails
+  FarcasterNotificationDetails,
+  formatMarketAlert
 } from './services/notificationService';
 import { sdk } from '@farcaster/miniapp-sdk';
 import { 
@@ -35,8 +36,37 @@ import {
   X,
   Settings,
   ArrowRight,
-  ShieldAlert
+  ShieldAlert,
+  TrendingDown,
+  Info,
+  Sparkles,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
+
+const iconNameMap: Record<AppIconName, React.ReactNode> = {
+  'zap': <Zap size={20} />,
+  'rocket': <Rocket size={20} />,
+  'waves': <Waves size={20} />,
+  'trending-up': <TrendingUp size={20} />,
+  'trending-down': <TrendingDown size={20} />,
+  'image': <ImageIcon size={20} />,
+  'check': <CheckCircle2 size={20} />,
+  'alert': <AlertCircle size={20} />,
+  'info': <Info size={20} />
+};
+
+const iconEmojiMap: Record<AppIconName, string> = {
+  'zap': '⚡',
+  'rocket': '🚀',
+  'waves': '🌊',
+  'trending-up': '📈',
+  'trending-down': '📉',
+  'image': '🖼️',
+  'check': '✅',
+  'alert': '⚠️',
+  'info': 'ℹ️'
+};
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AppTab>(AppTab.NFT);
@@ -48,21 +78,26 @@ const App: React.FC = () => {
   const [notifPermission, setNotifPermission] = useState<NotificationPermission>('default');
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [farcasterNotifDetails, setFarcasterNotifDetails] = useState<FarcasterNotificationDetails | null>(null);
+  const [isOptingIn, setIsOptingIn] = useState(false);
   const [notifPreferences, setNotifPreferences] = useState({
     onChain: true,
     market: false,
     aiUpdates: true
   });
 
+  // Mock Market State
+  const ethPriceRef = useRef(2450);
+  const marketCheckIntervalRef = useRef<number | null>(null);
+
   useEffect(() => {
     const detectEnvironment = async () => {
-      // Safe call for Farcaster SDK
+      // Safe SDK Ready call
       try {
         if (sdk && sdk.actions && typeof sdk.actions.ready === 'function') {
-          sdk.actions.ready();
+          await sdk.actions.ready();
         }
       } catch (e) {
-        console.warn("Farcaster SDK initialization skipped:", e);
+        console.warn("Farcaster SDK ready call skipped or failed", e);
       }
 
       const isFarcaster = !!(window as any).frame || !!(window as any).farcaster;
@@ -84,7 +119,7 @@ const App: React.FC = () => {
           if (isBase) {
             setEnvironment('base');
             const accounts = await ethereum.request({ method: 'eth_accounts' });
-            if (accounts.length > 0) {
+            if (accounts && accounts.length > 0) {
               setConnectionType('Base Smart Wallet');
               setIsWalletConnected(true);
               setIsSmartWallet(ethereum.isSmartWallet || ethereum.isCoinbaseWallet);
@@ -101,20 +136,68 @@ const App: React.FC = () => {
       setNotifPermission(Notification.permission);
     }
     
-    const savedDetails = localStorage.getItem('bsambh_farcaster_notif');
-    if (savedDetails) {
-      setFarcasterNotifDetails(JSON.parse(savedDetails));
+    // Safety check for localStorage parsing
+    try {
+      const savedDetails = localStorage.getItem('bsambh_farcaster_notif');
+      if (savedDetails) {
+        setFarcasterNotifDetails(JSON.parse(savedDetails));
+      }
+      
+      const savedPrefs = localStorage.getItem('bsambh_notif_prefs');
+      if (savedPrefs) {
+        setNotifPreferences(JSON.parse(savedPrefs));
+      }
+    } catch (err) {
+      console.warn("Failed to restore app state from storage", err);
     }
+
+    return () => {
+      if (marketCheckIntervalRef.current) clearInterval(marketCheckIntervalRef.current);
+    };
   }, []);
 
-  const notify = useCallback((title: string, message: string, type: AppNotification['type'] = 'info', icon?: React.ReactNode) => {
+  const notify = useCallback((title: string, message: string, type: AppNotification['type'] = 'info', iconName?: AppIconName) => {
     const id = Date.now().toString();
-    const newNotif = { id, title, message, type, icon };
+    const icon = iconName ? iconNameMap[iconName] : undefined;
+    const newNotif: AppNotification = { id, title, message, type, iconName, icon };
     setNotifications(prev => [newNotif, ...prev]);
-    sendSystemNotification(title, message);
-  }, []);
+    
+    const remoteTitle = iconName ? `${iconEmojiMap[iconName]} ${title}` : title;
 
-  const handleToggleNotifications = async () => {
+    if (farcasterNotifDetails) {
+      sendFarcasterNotification(farcasterNotifDetails, remoteTitle, message).catch(console.error);
+    }
+    sendSystemNotification(remoteTitle, message);
+  }, [farcasterNotifDetails]);
+
+  // Market Monitoring Effect
+  useEffect(() => {
+    if (marketCheckIntervalRef.current) clearInterval(marketCheckIntervalRef.current);
+
+    if (notifPreferences.market) {
+      marketCheckIntervalRef.current = window.setInterval(() => {
+        const chance = Math.random();
+        if (chance > 0.8) {
+          const isJump = Math.random() > 0.5;
+          const changePercent = isJump ? 5.2 : -5.1;
+          const oldPrice = ethPriceRef.current;
+          ethPriceRef.current = oldPrice * (1 + (changePercent / 100));
+          
+          const alert = formatMarketAlert("ETH", changePercent, ethPriceRef.current);
+          notify(
+            alert.title, 
+            alert.body, 
+            changePercent > 0 ? 'success' : 'error', 
+            changePercent > 0 ? 'trending-up' : 'trending-down'
+          );
+        }
+      }, 45000);
+    }
+
+    localStorage.setItem('bsambh_notif_prefs', JSON.stringify(notifPreferences));
+  }, [notifPreferences.market, notify]);
+
+  const handleToggleNotifications = () => {
     setShowSettingsModal(true);
   };
 
@@ -124,19 +207,19 @@ const App: React.FC = () => {
       return;
     }
 
+    setIsOptingIn(true);
     try {
       let details: any = null;
       if (environment === 'farcaster' || environment === 'base') {
         try {
-          if (sdk && sdk.actions && typeof sdk.actions.addMiniApp === 'function') {
-            const response = await sdk.actions.addMiniApp();
-            if (response.notificationDetails) {
-              details = { notificationDetails: response.notificationDetails };
-            }
+          const response = await sdk.actions.addMiniApp();
+          if (response && response.notificationDetails) {
+            details = { notificationDetails: response.notificationDetails };
           } else {
             details = await simulateFarcasterNotificationOptIn();
           }
         } catch (sdkError) {
+          console.warn("Farcaster SDK addMiniApp failed, falling back to simulation", sdkError);
           details = await simulateFarcasterNotificationOptIn();
         }
       } else {
@@ -150,13 +233,17 @@ const App: React.FC = () => {
         const notifInfo: FarcasterNotificationDetails = details.notificationDetails;
         setFarcasterNotifDetails(notifInfo);
         localStorage.setItem('bsambh_farcaster_notif', JSON.stringify(notifInfo));
-        await sendFarcasterNotification(notifInfo, "Welcome to Bsambh!", "Real-time alerts enabled.");
-        notify("Push Alerts Active", "Bsambh is now linked to your Farcaster client.", "success", <Bell size={20} />);
+        
+        await sendFarcasterNotification(notifInfo, "🔔 Welcome to Bsambh!", "Real-time alerts for Base are now active.");
+        
+        notify("Push Alerts Active", "Bsambh is now linked to your Farcaster client.", "success", 'check');
         setShowSettingsModal(false);
       }
     } catch (e) {
       console.error("Notification opt-in failed", e);
-      notify("Opt-in Failed", "Could not sync notification settings.", "error");
+      notify("Opt-in Failed", "Could not sync notification settings.", "error", 'alert');
+    } finally {
+      setIsOptingIn(false);
     }
   };
 
@@ -168,7 +255,7 @@ const App: React.FC = () => {
     setIsWalletConnected(true);
     setIsSmartWallet(isSmart);
     setConnectionType(isSmart ? 'Smart Wallet' : 'Standard Wallet');
-    notify("Identity Linked", "Connected via " + (isSmart ? 'Smart Account' : 'Standard Wallet'), "success", <ShieldCheck size={20} />);
+    notify("Identity Linked", "Connected via " + (isSmart ? 'Smart Account' : 'Standard Wallet'), "success", 'zap');
   };
 
   const renderContent = () => {
@@ -178,7 +265,7 @@ const App: React.FC = () => {
       case AppTab.EARN: return <Earn />;
       case AppTab.NFT: return <NFTLauncher isWalletConnected={isWalletConnected} onConnect={() => connectWallet(true)} notify={notify} />;
       case AppTab.AI_CHAT: return <AIChat />;
-      case AppTab.AI_IMAGE: return <AIImageGen />;
+      case AppTab.AI_IMAGE: return <AIImageGen notify={notify} />;
       case AppTab.BRIDGE: return <Bridge notify={notify} />;
       default: return <NFTLauncher isWalletConnected={isWalletConnected} onConnect={() => connectWallet(true)} notify={notify} />;
     }
@@ -204,7 +291,7 @@ const App: React.FC = () => {
               </button>
             </div>
             
-            <div className="p-8 space-y-8">
+            <div className="p-8 space-y-8 max-h-[60vh] overflow-y-auto">
               <div className="space-y-4">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-2">Channel Subscriptions</label>
                 <div className="space-y-3">
@@ -218,7 +305,7 @@ const App: React.FC = () => {
                   <NotifChannel 
                     icon={<TrendingUp size={18} />} 
                     title="Market Alerts" 
-                    desc="BTC/ETH price fluctuations"
+                    desc="5% ETH/USDC Price Jumps"
                     isActive={notifPreferences.market}
                     onToggle={() => setNotifPreferences({...notifPreferences, market: !notifPreferences.market})}
                   />
@@ -236,8 +323,8 @@ const App: React.FC = () => {
                 <div className="w-8 h-8 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-500 shrink-0">
                   <ShieldAlert size={16} />
                 </div>
-                <p className="text-[10px] text-zinc-400 font-medium leading-relaxed">
-                  Enabling notifications allows Bsambh to ping you even when the app is closed.
+                <p className="text-[10px] text-zinc-400 font-medium leading-relaxed italic">
+                  Market alerts trigger instantly when volatility exceeds 5%. Ensure notifications are allowed in your device settings.
                 </p>
               </div>
             </div>
@@ -245,15 +332,39 @@ const App: React.FC = () => {
             <div className="p-8 bg-white/5 border-t border-white/10">
               <button 
                 onClick={enableNotifications}
+                disabled={isOptingIn}
                 className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl flex items-center justify-center gap-3 active:scale-95 ${
                   farcasterNotifDetails 
                   ? 'bg-zinc-800 text-zinc-500 cursor-default' 
                   : 'bg-white text-black hover:bg-blue-600 hover:text-white'
                 }`}
               >
-                {farcasterNotifDetails ? <><CheckCircle2 size={18} /> Notifications Active</> : <><Bell size={18} /> Enable Push Notifications</>}
+                {isOptingIn ? <Loader2 className="animate-spin" size={18} /> : farcasterNotifDetails ? <><CheckCircle2 size={18} /> Notifications Active</> : <><Bell size={18} /> Enable Push Notifications</>}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {environment === 'farcaster' && !farcasterNotifDetails && activeTab === AppTab.NFT && (
+        <div className="max-w-7xl mx-auto px-4 md:px-8 pt-8">
+          <div className="p-6 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 border border-blue-500/30 rounded-[32px] flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top-4 duration-700">
+            <div className="flex items-center gap-5 text-left">
+              <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-600/20 shrink-0">
+                <Sparkles size={28} />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-xl font-black italic uppercase tracking-tighter">Stay Synchronized</h3>
+                <p className="text-xs text-zinc-400 font-medium">Get notified when your mints complete or market prices jump 5%.</p>
+              </div>
+            </div>
+            <button 
+              onClick={enableNotifications}
+              disabled={isOptingIn}
+              className="px-8 py-4 bg-white text-black font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl hover:bg-blue-600 hover:text-white transition-all flex items-center gap-3"
+            >
+              {isOptingIn ? <Loader2 className="animate-spin" size={14} /> : <><Bell size={14} /> Enable Notifications</>}
+            </button>
           </div>
         </div>
       )}
@@ -284,12 +395,12 @@ const App: React.FC = () => {
           <button 
             onClick={handleToggleNotifications}
             className={`p-2.5 rounded-xl border transition-all ${
-              farcasterNotifDetails 
+              farcasterNotifDetails && notifPreferences.market
               ? 'bg-blue-500/10 border-blue-500/30 text-blue-500 shadow-[0_0_15px_rgba(0,82,255,0.2)]' 
               : 'bg-white/5 border-white/10 text-zinc-500 hover:text-white hover:bg-white/10'
             }`}
           >
-            {farcasterNotifDetails ? <Bell size={18} className="animate-pulse" /> : <BellOff size={18} />}
+            {farcasterNotifDetails ? <Bell size={18} className={notifPreferences.market ? "animate-pulse" : ""} /> : <BellOff size={18} />}
           </button>
 
           {isWalletConnected && (
