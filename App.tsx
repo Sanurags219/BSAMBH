@@ -274,18 +274,18 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      <nav className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-3xl">
-        <div className="bg-zinc-900/95 backdrop-blur-3xl border border-white/10 px-4 py-4 rounded-[42px] shadow-[0_32px_80px_rgba(0,0,0,0.7)] flex justify-between items-center relative">
+      <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-2xl px-4">
+        <div className="bg-zinc-900/95 backdrop-blur-3xl border border-white/10 px-4 py-3.5 rounded-[42px] shadow-[0_32px_80px_rgba(0,0,0,0.8)] flex justify-between items-center">
           <div className="flex items-center gap-1 flex-1 justify-around">
-            <NavItem icon={<Rocket size={22} />} label="Launch" isActive={activeTab === AppTab.NFT} onClick={() => setActiveTab(AppTab.NFT)} />
-            <NavItem icon={<ArrowLeftRight size={22} />} label="Swap" isActive={activeTab === AppTab.SWAP} onClick={() => setActiveTab(AppTab.SWAP)} />
-            <NavItem icon={<TrendingUp size={22} />} label="Earn" isActive={activeTab === AppTab.EARN} onClick={() => setActiveTab(AppTab.EARN)} />
+            <NavItem icon={<Rocket size={20} />} label="Launch" isActive={activeTab === AppTab.NFT} onClick={() => setActiveTab(AppTab.NFT)} />
+            <NavItem icon={<ArrowLeftRight size={20} />} label="Swap" isActive={activeTab === AppTab.SWAP} onClick={() => setActiveTab(AppTab.SWAP)} />
+            <NavItem icon={<TrendingUp size={20} />} label="Earn" isActive={activeTab === AppTab.EARN} onClick={() => setActiveTab(AppTab.EARN)} />
           </div>
-          <div className="w-px h-10 bg-white/5 mx-2" />
+          <div className="w-px h-8 bg-white/5 mx-2" />
           <div className="flex items-center gap-1 flex-1 justify-around">
-            <NavItem icon={<Waves size={22} />} label="Bridge" isActive={activeTab === AppTab.BRIDGE} onClick={() => setActiveTab(AppTab.BRIDGE)} />
-            <NavItem icon={<MessageSquareText size={22} />} label="Chat" isActive={activeTab === AppTab.AI_CHAT} onClick={() => setActiveTab(AppTab.AI_CHAT)} />
-            <NavItem icon={<ImageIcon size={22} />} label="Studio" isActive={activeTab === AppTab.AI_IMAGE} onClick={() => setActiveTab(AppTab.AI_IMAGE)} />
+            <NavItem icon={<Waves size={20} />} label="Bridge" isActive={activeTab === AppTab.BRIDGE} onClick={() => setActiveTab(AppTab.BRIDGE)} />
+            <NavItem icon={<MessageSquareText size={20} />} label="Chat" isActive={activeTab === AppTab.AI_CHAT} onClick={() => setActiveTab(AppTab.AI_CHAT)} />
+            <NavItem icon={<ImageIcon size={20} />} label="Studio" isActive={activeTab === AppTab.AI_IMAGE} onClick={() => setActiveTab(AppTab.AI_IMAGE)} />
           </div>
         </div>
       </nav>
@@ -317,10 +317,10 @@ const NotifChannel: React.FC<{ icon: React.ReactNode; title: string; desc: strin
 );
 
 const NavItem: React.FC<{ icon: React.ReactNode; label: string; isActive: boolean; onClick: () => void }> = ({ icon, label, isActive, onClick }) => (
-  <button onClick={onClick} className="flex flex-col items-center gap-2 px-5 py-3 rounded-2xl relative transition-all duration-300 group">
+  <button onClick={onClick} className="flex flex-col items-center gap-1.5 px-4 py-2 rounded-2xl relative transition-all duration-300 group">
     <div className={`transition-all duration-300 ${isActive ? 'text-blue-500 scale-110 -translate-y-1' : 'text-zinc-500 group-hover:text-zinc-300'}`}>{icon}</div>
     <span className={`text-[8px] font-black uppercase tracking-[0.2em] transition-all ${isActive ? 'text-blue-500 opacity-100' : 'text-zinc-500 opacity-60'}`}>{label}</span>
-    {isActive && <div className="absolute inset-x-4 -bottom-1 h-1 bg-blue-600 rounded-full blur-[2px] animate-pulse" />}
+    {isActive && <div className="absolute inset-x-2 -bottom-1 h-0.5 bg-blue-600 rounded-full blur-[1px] animate-pulse" />}
   </button>
 );
 

@@ -3,14 +3,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Bsambh - Base Mainnet Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Bsambh | The Base Ecosystem Portal</title>
   
   <!-- Farcaster Frame v2 Meta Tags -->
   <meta property="fc:frame" content='{"version":"next","imageUrl":"https://bsambh.app/splash.png","button":{"title":"Launch Bsambh","action":{"type":"launch_app","name":"Bsambh","url":"https://bsambh.app","splashImageUrl":"https://bsambh.app/splash.png","splashBackgroundColor":"#000000"}}}' />
-  <meta property="og:title" content="Bsambh" />
-  <meta property="og:description" content="Production-grade portal for Base Mainnet." />
+  <meta property="og:title" content="Bsambh - Base Mainnet Hub" />
+  <meta property="og:description" content="Production-grade portal for Swapping, Minting, and Earning on Base Mainnet." />
   <meta property="og:image" content="https://bsambh.app/splash.png" />
+  <meta name="twitter:card" content="summary_large_image">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,6 +30,8 @@
       overflow-x: hidden;
       -webkit-tap-highlight-color: transparent;
       overscroll-behavior-y: none;
+      height: 100vh;
+      width: 100vw;
     }
     .base-gradient {
       background: linear-gradient(135deg, var(--base-blue) 0%, #002d8d 100%);
@@ -36,6 +39,7 @@
     .glass-card {
       background: rgba(255, 255, 255, 0.03);
       backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
     #splash-screen {
@@ -48,6 +52,7 @@
       justify-content: center;
       z-index: 9999;
       transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;
+      will-change: opacity;
     }
     .loader-ring {
       width: 90px;
@@ -64,9 +69,11 @@
     .fade-out {
       opacity: 0;
       visibility: hidden;
+      pointer-events: none;
     }
     ::-webkit-scrollbar {
       width: 0px;
+      background: transparent;
     }
   </style>
   <script>
@@ -106,7 +113,7 @@
     </div>
     <div class="mt-8 text-center">
       <h1 class="font-black italic text-2xl uppercase tracking-tighter">Bsambh</h1>
-      <p class="text-[9px] text-zinc-600 font-black uppercase tracking-[0.3em] mt-2 animate-pulse">Base Mainnet Protocol</p>
+      <p class="text-[10px] text-zinc-600 font-black uppercase tracking-[0.3em] mt-2 animate-pulse">Base Protocol Gateway</p>
     </div>
   </div>
 
