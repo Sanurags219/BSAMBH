@@ -1,0 +1,19 @@
+{
+  "name": "Bsambh",
+  "description": "The ultimate Web3 portal for Base and Farcaster. Launch tokens/NFTs, swap assets, earn yield, and use Gemini AI for creative tasks.",
+  "farcaster": {
+    "manifest": {
+      "name": "Bsambh",
+      "icon": "https://bsambh.app/icon.png",
+      "description": "Base/Farcaster ecosystem companion",
+      "aboutUrl": "https://bsambh.app",
+      "splashImageUrl": "https://bsambh.app/splash.png",
+      "splashBackgroundColor": "#000000"
+    }
+  },
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
